@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Escenario empresarial: diseño y evaluación de seguridad perimetral</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --panel:#ffffff; --ink:#18212f; --muted:#5f6b7a;
+    --primary:#0b6bcb; --accent:#00a88f; --danger:#c93c37; --warn:#d98200;
+    --border:#dce3ec; --soft:#eef4fb; --good:#25864a; --shadow:0 10px 30px rgba(17,24,39,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+  header{background:linear-gradient(135deg,#0b4f93,#0b6bcb 55%,#00a88f);color:white;padding:38px 22px}
+  header .wrap{max-width:1180px;margin:auto}
+  h1{margin:0 0 8px;font-size:clamp(28px,4vw,46px);line-height:1.1}
+  .subtitle{font-size:18px;opacity:.94;max-width:880px}
+  .badge{display:inline-block;margin-top:16px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);padding:7px 12px;border-radius:999px;font-size:13px}
+  main{max-width:1180px;margin:24px auto;padding:0 18px 48px}
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:20;background:rgba(245,247,251,.92);backdrop-filter:blur(8px);padding:10px 0 12px}
+  .tab{border:1px solid var(--border);background:white;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600;color:#334155}
+  .tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+  section{display:none;animation:fade .25s ease}
+  section.active{display:block}
+  @keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:var(--shadow);margin-bottom:18px}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
+  @media(max-width:850px){.col-4,.col-6,.col-8{grid-column:span 12}.tabs{position:static}}
+  h2{font-size:28px;margin:6px 0 16px;color:#123f68}
+  h3{margin:4px 0 10px;color:#174f7e}
+  p{margin:8px 0 12px}
+  .lead{font-size:18px;color:#344256}
+  .kpi{background:linear-gradient(180deg,#fff,#f7fbff);border:1px solid var(--border);padding:18px;border-radius:14px}
+  .kpi strong{display:block;font-size:28px;color:var(--primary)}
+  .mini{font-size:13px;color:var(--muted)}
+  .callout{border-left:4px solid var(--accent);background:#edfdf8;padding:14px 16px;border-radius:8px;margin:14px 0}
+  .warning{border-left-color:var(--warn);background:#fff7e8}
+  .danger{border-left-color:var(--danger);background:#fff0ef}
+  ul.clean{padding-left:18px;margin:8px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{border-bottom:1px solid var(--border);padding:10px 8px;text-align:left;vertical-align:top}
+  th{background:#f6f9fc;color:#27435f;position:sticky;top:54px}
+  .tag{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700}
+  .tag.high{background:#fde8e7;color:#a82c27}.tag.med{background:#fff2d9;color:#9a5a00}.tag.low{background:#e6f6ec;color:#247041}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 16px}
+  button,select,input[type=range]{font:inherit}
+  button{background:var(--primary);color:white;border:0;border-radius:9px;padding:9px 13px;cursor:pointer;font-weight:650}
+  button.secondary{background:#e8eef5;color:#234}
+  .topology-wrap{overflow:auto;background:#0b1520;border-radius:16px;padding:16px;border:1px solid #1c3147}
+  svg{min-width:920px;width:100%;height:auto}
+  .node{cursor:pointer;transition:.2s}
+  .node:hover{filter:brightness(1.1)}
+  .node rect{rx:12;ry:12;stroke:#d9e7f6;stroke-width:2}
+  .link{stroke:#88a6c0;stroke-width:3;fill:none;stroke-dasharray:8 5}
+  .secure{stroke:#1fc7a6;stroke-width:4}
+  .node text{fill:white;font-size:13px;font-weight:700;pointer-events:none}
+  #nodeInfo{margin-top:12px;background:#eef7ff;border:1px solid #cfe5fb;border-radius:12px;padding:14px}
+  .bar{height:26px;background:#e8edf3;border-radius:8px;overflow:hidden;margin:7px 0 14px}
+  .bar span{display:block;height:100%;background:linear-gradient(90deg,#0b6bcb,#00a88f);color:white;font-size:12px;font-weight:700;text-align:right;padding:4px 7px;min-width:35px}
+  .risk-matrix{display:grid;grid-template-columns:60px repeat(5,1fr);gap:4px;max-width:800px}
+  .risk-matrix div{padding:10px;text-align:center;border-radius:7px;font-size:12px;border:1px solid rgba(0,0,0,.04)}
+  .rm-head{background:#e9eef5;font-weight:700}.r1{background:#dff3e7}.r2{background:#fff2cf}.r3{background:#ffd8aa}.r4{background:#ffc3c0}.r5{background:#ed8c88;color:#5a1210}
+  .risk-list .risk-item{display:none;border:1px solid var(--border);padding:12px;border-radius:10px;margin:8px 0;background:white}
+  .risk-list .risk-item.show{display:block}
+  .accordion{border:1px solid var(--border);border-radius:10px;margin:8px 0;overflow:hidden;background:white}
+  .accordion summary{cursor:pointer;padding:12px 14px;font-weight:700;background:#f7f9fc}
+  .accordion .body{padding:12px 14px}
+  .sim-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:800px){.sim-grid{grid-template-columns:repeat(2,1fr)}}
+  .sim-card{padding:14px;border:1px solid var(--border);border-radius:12px;background:white}
+  .sim-value{font-size:25px;font-weight:800;color:var(--primary)}
+  .status{font-size:13px;font-weight:800;padding:4px 7px;border-radius:99px;display:inline-block}
+  .status.ok{background:#e6f6ec;color:#247041}.status.warn{background:#fff2d9;color:#9a5a00}.status.bad{background:#fde8e7;color:#a82c27}
+  .footer-note{font-size:12px;color:#6c7a89;margin-top:26px;text-align:center}
+  .print-only{display:none}
+  @media print{.tabs,.controls,button{display:none!important}section{display:block!important}.card{box-shadow:none;break-inside:avoid}.print-only{display:block}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="mini" style="color:#dcecff">REDES CONVERGENTES · ACTIVIDAD MODELO</div>
+    <h1>Escenario empresarial: diseño y evaluación de una solución de seguridad perimetral</h1>
+    <div class="subtitle">Solución guiada e interactiva para comprender cómo integrar topología, QoS, reservas de ancho de banda, controles de seguridad y evaluación de riesgos en un entorno empresarial realista.</div>
+    <div class="badge">Caso de estudio: Clínica VitalNet · 220 colaboradores · servicios clínicos, administrativos, IoT y telemedicina</div>
+  </div>
+</header>
+<main>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="intro">1. Introducción</button>
+    <button class="tab" data-tab="scenario">2. Escenario</button>
+    <button class="tab" data-tab="design">3. Diseño</button>
+    <button class="tab" data-tab="qos">4. QoS y ancho de banda</button>
+    <button class="tab" data-tab="risk">5. Riesgo y seguridad</button>
+    <button class="tab" data-tab="evaluation">6. Evaluación</button>
+    <button class="tab" data-tab="conclusion">7. Conclusión</button>
+  </div>
+
+  <section id="intro" class="active">
+    <div class="card">
+      <h2>1. Introducción</h2>
+      <p class="lead">La seguridad perimetral empresarial busca controlar, inspeccionar y proteger las comunicaciones entre la red interna de una organización y redes externas como Internet, sedes remotas, proveedores o servicios en la nube.</p>
+      <p>En una red convergente el reto aumenta porque voz, video, datos, dispositivos IoT y aplicaciones críticas comparten infraestructura. Por eso la solución no puede limitarse a “poner un firewall”: debe combinar segmentación, control de acceso, cifrado, autenticación, monitoreo, respuesta a incidentes y mecanismos de QoS que mantengan disponibles los servicios prioritarios.</p>
+      <div class="callout"><strong>Objetivo del informe:</strong> diseñar y evaluar una arquitectura de seguridad perimetral para una empresa concreta, justificando cómo protege frente a amenazas conocidas y desconocidas sin deteriorar de forma innecesaria el rendimiento de la red.</div>
+    </div>
+    <div class="grid">
+      <div class="kpi col-4"><span class="mini">Principio 1</span><strong>Reducir exposición</strong><span class="mini">DMZ, segmentación, mínimo privilegio</span></div>
+      <div class="kpi col-4"><span class="mini">Principio 2</span><strong>Verificar identidad</strong><span class="mini">MFA, RBAC, NAC/802.1X</span></div>
+      <div class="kpi col-4"><span class="mini">Principio 3</span><strong>Detectar y responder</strong><span class="mini">IDS/IPS, SIEM, logs y alertas</span></div>
+    </div>
+  </section>
+
+  <section id="scenario">
+    <div class="card">
+      <h2>2. Escenario empresarial</h2>
+      <div class="grid">
+        <div class="col-8">
+          <h3>Clínica VitalNet</h3>
+          <p>Clínica privada de tamaño mediano con <strong>220 colaboradores</strong>, una sede principal, servicios de consulta externa, laboratorio, imágenes diagnósticas, administración y telemedicina. Opera de lunes a sábado y mantiene servicios clínicos críticos 24/7.</p>
+          <p>La institución utiliza historia clínica electrónica, PACS para imágenes, correo corporativo, videollamadas de telemedicina, telefonía IP, portal web para pacientes, acceso VPN para especialistas, cámaras IP y dispositivos IoT/biomédicos.</p>
+        </div>
+        <div class="col-4">
+          <div class="kpi"><span class="mini">Usuarios internos</span><strong>220</strong></div>
+          <div class="kpi" style="margin-top:10px"><span class="mini">Servicios críticos</span><strong>7</strong></div>
+          <div class="kpi" style="margin-top:10px"><span class="mini">Enlace Internet</span><strong>500 Mbps</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Requisitos de seguridad</h3>
+      <table>
+        <thead><tr><th>Activo / servicio</th><th>Necesidad</th><th>Riesgo principal</th><th>Control propuesto</th></tr></thead>
+        <tbody>
+          <tr><td>Historia clínica</td><td>Confidencialidad e integridad</td><td>Robo de credenciales / exfiltración</td><td>MFA + RBAC + TLS + SIEM</td></tr>
+          <tr><td>Telemedicina</td><td>Disponibilidad y baja latencia</td><td>DDoS / congestión</td><td>IPS + QoS + rate-limit + redundancia</td></tr>
+          <tr><td>Portal de pacientes</td><td>Exposición controlada</td><td>Explotación web</td><td>DMZ + WAF/reverse proxy + parcheo</td></tr>
+          <tr><td>IoT/biomédicos</td><td>Aislamiento</td><td>Movimiento lateral</td><td>VLAN + ACL + NAC/802.1X</td></tr>
+          <tr><td>Acceso remoto</td><td>Autenticación fuerte</td><td>Secuestro de cuenta</td><td>VPN IPsec/SSL + MFA</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="design">
+    <div class="card">
+      <h2>3. Diseño de la solución de seguridad perimetral</h2>
+      <p>Haz clic en cada elemento de la topología para ver su función.</p>
+      <div class="topology-wrap">
+        <svg viewBox="0 0 1100 550" role="img" aria-label="Topología de seguridad perimetral">
+          <path class="link secure" d="M120 260 L250 260"/>
+          <path class="link secure" d="M390 260 L500 260"/>
+          <path class="link" d="M640 260 L750 120"/>
+          <path class="link" d="M640 260 L750 260"/>
+          <path class="link" d="M640 260 L750 400"/>
+          <path class="link" d="M890 120 L1010 120"/>
+          <path class="link" d="M890 260 L1010 260"/>
+          <path class="link" d="M890 400 L1010 400"/>
+
+          <g class="node" data-title="Internet / Proveedores" data-info="Origen de usuarios externos, proveedores cloud, especialistas remotos y potenciales amenazas. No se confía en este segmento.">
+            <rect x="35" y="215" width="170" height="90" fill="#28455f"/><text x="120" y="252" text-anchor="middle">Internet / Cloud</text><text x="120" y="275" text-anchor="middle">Red no confiable</text>
+          </g>
+          <g class="node" data-title="Firewall NGFW en alta disponibilidad" data-info="Inspección con estado, filtrado por aplicaciones, NAT/PAT, VPN, control de sesiones, geoblocking si aplica y alta disponibilidad activo/pasivo.">
+            <rect x="250" y="205" width="140" height="110" fill="#b4473f"/><text x="320" y="246" text-anchor="middle">NGFW</text><text x="320" y="270" text-anchor="middle">HA A/P</text>
+          </g>
+          <g class="node" data-title="IPS / Inspección avanzada" data-info="Detecta patrones de ataque conocidos y comportamientos anómalos. Complementa al firewall; no sustituye el monitoreo centralizado.">
+            <rect x="500" y="205" width="140" height="110" fill="#8a4eb3"/><text x="570" y="246" text-anchor="middle">IPS</text><text x="570" y="270" text-anchor="middle">Inspección</text>
+          </g>
+          <g class="node" data-title="DMZ" data-info="Zona desmilitarizada para servicios expuestos: portal de pacientes, reverse proxy/WAF y servidor VPN. Separa Internet de la red interna.">
+            <rect x="750" y="70" width="140" height="100" fill="#156b8f"/><text x="820" y="112" text-anchor="middle">DMZ</text><text x="820" y="136" text-anchor="middle">Servicios públicos</text>
+          </g>
+          <g class="node" data-title="Core interno segmentado" data-info="Switching de capa 3 con VLAN, ACL inter-VLAN y redundancia. Actúa como frontera lógica entre usuarios, servidores, voz e IoT.">
+            <rect x="750" y="210" width="140" height="100" fill="#147860"/><text x="820" y="250" text-anchor="middle">Core L3</text><text x="820" y="274" text-anchor="middle">VLAN + ACL</text>
+          </g>
+          <g class="node" data-title="SIEM / Monitoreo" data-info="Centraliza logs del firewall, IPS, VPN, servidores y equipos de red. Correlaciona eventos y genera alertas para responder a incidentes.">
+            <rect x="750" y="350" width="140" height="100" fill="#795824"/><text x="820" y="392" text-anchor="middle">SIEM</text><text x="820" y="416" text-anchor="middle">Logs + alertas</text>
+          </g>
+          <g class="node" data-title="Portal / WAF" data-info="Publica el portal de pacientes sin exponer directamente servidores internos. WAF/reverse proxy filtra tráfico web malicioso.">
+            <rect x="1010" y="80" width="80" height="80" fill="#2d7ea8"/><text x="1050" y="115" text-anchor="middle">WAF</text><text x="1050" y="136" text-anchor="middle">Portal</text>
+          </g>
+          <g class="node" data-title="Redes internas" data-info="Usuarios administrativos, médicos, servidores, voz y telemedicina; separados mediante VLAN y políticas de mínimo privilegio.">
+            <rect x="990" y="220" width="105" height="80" fill="#1d8f6b"/><text x="1042" y="253" text-anchor="middle">LAN</text><text x="1042" y="274" text-anchor="middle">Segmentada</text>
+          </g>
+          <g class="node" data-title="SOC / Equipo de seguridad" data-info="Analiza alertas del SIEM, coordina respuesta, gestiona incidentes, parches y evidencias.">
+            <rect x="990" y="360" width="105" height="80" fill="#9a6f2e"/><text x="1042" y="394" text-anchor="middle">SOC</text><text x="1042" y="415" text-anchor="middle">Respuesta</text>
+          </g>
+        </svg>
+      </div>
+      <div id="nodeInfo"><strong>Selecciona un elemento</strong> de la topología para ver su función dentro del diseño.</div>
+    </div>
+
+    <div class="card">
+      <h3>Segmentación lógica propuesta</h3>
+      <table>
+        <thead><tr><th>VLAN</th><th>Segmento</th><th>Política base</th></tr></thead>
+        <tbody>
+          <tr><td>10</td><td>Administración</td><td>Acceso a ERP, correo y servicios autorizados; sin acceso directo a IoT.</td></tr>
+          <tr><td>20</td><td>Clínica / médicos</td><td>Historia clínica, PACS, telemedicina y servicios asistenciales.</td></tr>
+          <tr><td>30</td><td>Voz</td><td>Solo servicios de telefonía; alta prioridad QoS.</td></tr>
+          <tr><td>40</td><td>IoT / biomédicos</td><td>Comunicación solo con servidores de gestión autorizados.</td></tr>
+          <tr><td>50</td><td>Invitados</td><td>Solo Internet; bloqueo completo hacia redes internas.</td></tr>
+          <tr><td>60</td><td>Servidores</td><td>Acceso por aplicación/puerto específico; administración restringida.</td></tr>
+          <tr><td>70</td><td>Gestión</td><td>Solo personal TI autorizado con MFA y registros.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="qos">
+    <div class="card">
+      <h2>4. QoS y reservas de ancho de banda</h2>
+      <p class="lead">La seguridad no debe degradar los servicios críticos. Por eso se reserva capacidad y se prioriza el tráfico sensible.</p>
+      <div class="controls">
+        <label><strong>Capacidad del enlace:</strong> <span id="bwLabel">500</span> Mbps</label>
+        <input id="bwRange" type="range" min="200" max="1000" step="50" value="500" />
+      </div>
+      <div id="bwBars"></div>
+      <div class="callout warning"><strong>Regla pedagógica:</strong> reservar ancho de banda no significa “regalar” capacidad que siempre estará ociosa. En condiciones normales, muchas plataformas permiten que otras clases usen capacidad disponible; cuando aparece congestión, se protege la clase prioritaria.</div>
+    </div>
+    <div class="card">
+      <h3>Política QoS propuesta</h3>
+      <table>
+        <thead><tr><th>Clase</th><th>Ejemplos</th><th>Tratamiento</th><th>Justificación</th></tr></thead>
+        <tbody>
+          <tr><td>EF / Voz</td><td>VoIP</td><td>Prioridad estricta, 10%</td><td>Sensible a latencia y jitter.</td></tr>
+          <tr><td>AF41 / Video crítico</td><td>Telemedicina</td><td>Reserva 25%</td><td>Necesita continuidad y baja pérdida.</td></tr>
+          <tr><td>AF31 / Clínico</td><td>Historia clínica, PACS</td><td>Reserva 30%</td><td>Aplicaciones críticas para atención.</td></tr>
+          <tr><td>AF21 / Operación</td><td>ERP, correo, VPN</td><td>Reserva 20%</td><td>Importantes, pero toleran algo de espera.</td></tr>
+          <tr><td>BE / Best Effort</td><td>Navegación e invitados</td><td>15%</td><td>Puede usar capacidad restante sin afectar tráfico crítico.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="risk">
+    <div class="card">
+      <h2>5. Matriz de riesgo y políticas de seguridad</h2>
+      <p>Haz clic en una celda para filtrar riesgos por nivel aproximado.</p>
+      <div class="risk-matrix" id="riskMatrix"></div>
+      <div class="risk-list" id="riskList">
+        <div class="risk-item" data-level="5"><strong>Ransomware en servidores clínicos</strong><br><span class="mini">Probabilidad 4 · Impacto 5 · Riesgo 20 (crítico)</span><p>Controles: segmentación, MFA, EDR, backups inmutables, parcheo, SIEM y respuesta a incidentes.</p></div>
+        <div class="risk-item" data-level="5"><strong>Robo de credenciales VPN</strong><br><span class="mini">Probabilidad 4 · Impacto 4 · Riesgo 16 (alto)</span><p>Controles: MFA, políticas de acceso condicional, bloqueo por comportamiento anómalo y monitoreo de sesiones.</p></div>
+        <div class="risk-item" data-level="4"><strong>DDoS contra telemedicina / portal</strong><br><span class="mini">Probabilidad 3 · Impacto 5 · Riesgo 15 (alto)</span><p>Controles: protección anti-DDoS del proveedor, rate-limit, WAF, CDN/reverse proxy, redundancia y QoS interna.</p></div>
+        <div class="risk-item" data-level="4"><strong>Movimiento lateral desde IoT</strong><br><span class="mini">Probabilidad 3 · Impacto 4 · Riesgo 12 (alto)</span><p>Controles: VLAN exclusiva, ACL, NAC/802.1X, mínimo privilegio, inventario y parcheo.</p></div>
+        <div class="risk-item" data-level="3"><strong>Explotación de aplicación web</strong><br><span class="mini">Probabilidad 3 · Impacto 3 · Riesgo 9 (medio)</span><p>Controles: WAF, TLS, hardening, pruebas de seguridad y gestión de vulnerabilidades.</p></div>
+        <div class="risk-item" data-level="2"><strong>Uso indebido de red de invitados</strong><br><span class="mini">Probabilidad 2 · Impacto 2 · Riesgo 4 (bajo)</span><p>Controles: aislamiento de clientes, salida directa a Internet y bloqueo de redes RFC1918 internas.</p></div>
+      </div>
+      <div class="controls"><button class="secondary" onclick="showAllRisks()">Mostrar todos</button></div>
+    </div>
+
+    <div class="card">
+      <h3>Políticas recomendadas</h3>
+      <details class="accordion"><summary>MFA — Autenticación multifactor</summary><div class="body">Exige al menos dos factores distintos, por ejemplo contraseña + aplicación autenticadora. Reduce el impacto de una contraseña robada.</div></details>
+      <details class="accordion"><summary>RBAC — Control de acceso basado en roles</summary><div class="body">Los permisos se asignan según la función laboral: médico, enfermería, facturación, TI. Evita que todos los usuarios tengan los mismos privilegios.</div></details>
+      <details class="accordion"><summary>TLS — Transport Layer Security</summary><div class="body">Cifra la comunicación entre cliente y servidor y protege confidencialidad e integridad durante el tránsito. Se usa, por ejemplo, en HTTPS.</div></details>
+      <details class="accordion"><summary>NAC / 802.1X</summary><div class="body">Controla qué usuario o dispositivo puede conectarse a la red. Antes de obtener acceso, el equipo debe autenticarse y cumplir políticas.</div></details>
+      <details class="accordion"><summary>SIEM — Security Information and Event Management</summary><div class="body">Centraliza eventos de firewall, IPS, servidores, VPN y equipos de red; correlaciona patrones para generar alertas útiles.</div></details>
+      <details class="accordion"><summary>Backup y gestión de parches</summary><div class="body">Los respaldos deben probarse y, para ransomware, idealmente mantenerse offline o inmutables. La gestión de parches reduce la ventana de exposición a vulnerabilidades conocidas.</div></details>
+    </div>
+  </section>
+
+  <section id="evaluation">
+    <div class="card">
+      <h2>6. Evaluación de la solución</h2>
+      <p>Selecciona un escenario para observar cómo cambia el desempeño esperado y qué controles toman protagonismo.</p>
+      <div class="controls">
+        <select id="scenarioSelect">
+          <option value="normal">Operación normal</option>
+          <option value="peak">Hora pico / congestión</option>
+          <option value="ddos">Ataque DDoS</option>
+          <option value="ransom">Intento de ransomware</option>
+        </select>
+        <button onclick="runSimulation()">Simular</button>
+      </div>
+      <div class="sim-grid">
+        <div class="sim-card"><div class="mini">Latencia voz</div><div id="simLatency" class="sim-value">28 ms</div><span id="latencyStatus" class="status ok">Adecuada</span></div>
+        <div class="sim-card"><div class="mini">Jitter</div><div id="simJitter" class="sim-value">8 ms</div><span id="jitterStatus" class="status ok">Controlado</span></div>
+        <div class="sim-card"><div class="mini">Pérdida</div><div id="simLoss" class="sim-value">0.2%</div><span id="lossStatus" class="status ok">Baja</span></div>
+        <div class="sim-card"><div class="mini">Riesgo residual</div><div id="simRisk" class="sim-value">Bajo</div><span id="riskStatus" class="status ok">Aceptable</span></div>
+      </div>
+      <div id="simExplain" class="callout" style="margin-top:16px">En operación normal, los controles perimetrales y la segmentación trabajan sin afectar de forma significativa el rendimiento.</div>
+    </div>
+
+    <div class="card">
+      <h3>Evaluación cualitativa</h3>
+      <table>
+        <thead><tr><th>Dimensión</th><th>Resultado esperado</th><th>Cómo se valida</th></tr></thead>
+        <tbody>
+          <tr><td>Amenazas conocidas</td><td>Alta capacidad de bloqueo</td><td>Firmas IPS, WAF, reglas NGFW, EDR, parches.</td></tr>
+          <tr><td>Amenazas desconocidas</td><td>Mitigación parcial</td><td>Anomalías, SIEM, segmentación, mínimo privilegio y respuesta.</td></tr>
+          <tr><td>Disponibilidad</td><td>Alta</td><td>NGFW HA, redundancia, backups, enlaces alternos.</td></tr>
+          <tr><td>Rendimiento</td><td>Impacto controlado</td><td>QoS, capacidad, pruebas de carga, latencia/jitter/pérdida.</td></tr>
+          <tr><td>Trazabilidad</td><td>Alta</td><td>Logs centralizados, sincronización horaria, alertas y retención.</td></tr>
+        </tbody>
+      </table>
+      <div class="callout danger"><strong>Conclusión técnica de la evaluación:</strong> ningún control elimina por completo el riesgo. La efectividad surge de la combinación de capas: prevención + segmentación + detección + respuesta + recuperación.</div>
+    </div>
+  </section>
+
+  <section id="conclusion">
+    <div class="card">
+      <h2>7. Conclusión y recomendaciones</h2>
+      <p class="lead">La solución propuesta protege el perímetro sin tratar la red interna como un espacio totalmente confiable. La seguridad se distribuye desde Internet hasta los usuarios y los activos críticos.</p>
+      <p>La arquitectura combina NGFW, IPS, DMZ, segmentación por VLAN, ACL, MFA, RBAC, NAC/802.1X, TLS, SIEM, backups y gestión de parches. Esta combinación reduce el riesgo de accesos no autorizados, movimientos laterales, explotación de servicios públicos, robo de credenciales y ataques de disponibilidad.</p>
+      <p>El componente QoS protege voz, telemedicina y aplicaciones clínicas en momentos de congestión. De esta forma, seguridad y rendimiento se diseñan juntos: inspeccionar más tráfico no debe significar volver inutilizables los servicios críticos.</p>
+      <h3>Recomendaciones de mejora</h3>
+      <ul class="clean">
+        <li>Implementar doble proveedor de Internet y alta disponibilidad del firewall.</li>
+        <li>Ejecutar pruebas periódicas de restauración de backups y ejercicios de respuesta a ransomware.</li>
+        <li>Actualizar reglas, firmas, firmware y sistemas mediante un proceso formal de gestión de parches.</li>
+        <li>Revisar trimestralmente reglas de firewall y ACL para retirar permisos obsoletos.</li>
+        <li>Realizar pruebas de carga y QoS con tráfico realista para validar latencia, jitter y pérdida.</li>
+        <li>Integrar métricas del SIEM con un procedimiento claro de escalamiento y respuesta.</li>
+      </ul>
+      <div class="callout"><strong>Idea de cierre para los estudiantes:</strong> una buena solución no es la que tiene más herramientas, sino la que relaciona cada riesgo con un control, una evidencia de funcionamiento y una métrica que permita saber si realmente protege.</div>
+    </div>
+  </section>
+
+  <div class="footer-note">Actividad modelo para fines académicos. Los valores de ancho de banda y desempeño son supuestos pedagógicos y deben ajustarse a mediciones reales antes de una implementación productiva.</div>
+</main>
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t => t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active');
+    document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(t.dataset.tab).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }));
+
+  document.querySelectorAll('.node').forEach(n=>n.addEventListener('click',()=>{
+    document.getElementById('nodeInfo').innerHTML=`<strong>${n.dataset.title}</strong><br>${n.dataset.info}`;
+  }));
+
+  const allocations = [
+    ['Voz (EF)',10],['Telemedicina (AF41)',25],['Clínico/PACS (AF31)',30],['Operación/VPN (AF21)',20],['Best Effort',15]
+  ];
+  function renderBw(){
+    const total=Number(document.getElementById('bwRange').value); document.getElementById('bwLabel').textContent=total;
+    const host=document.getElementById('bwBars'); host.innerHTML='';
+    allocations.forEach(([name,pct])=>{
+      const mbps=(total*pct/100).toFixed(0);
+      host.innerHTML += `<div><strong>${name}</strong> — ${pct}% ≈ ${mbps} Mbps<div class="bar"><span style="width:${pct}%">${pct}%</span></div></div>`;
+    });
+  }
+  document.getElementById('bwRange').addEventListener('input',renderBw); renderBw();
+
+  const matrix=document.getElementById('riskMatrix');
+  matrix.innerHTML='<div></div>'+[1,2,3,4,5].map(i=>`<div class="rm-head">Impacto ${i}</div>`).join('');
+  for(let p=5;p>=1;p--){
+    matrix.innerHTML += `<div class="rm-head">P ${p}</div>`;
+    for(let i=1;i<=5;i++){
+      const score=p*i; let level=1;
+      if(score>=16) level=5; else if(score>=11) level=4; else if(score>=7) level=3; else if(score>=4) level=2;
+      matrix.innerHTML += `<div class="r${level}" data-level="${level}" title="Probabilidad ${p} × Impacto ${i} = ${score}">${score}</div>`;
+    }
+  }
+  matrix.querySelectorAll('[data-level]').forEach(c=>c.addEventListener('click',()=>{
+    const lev=c.dataset.level; document.querySelectorAll('.risk-item').forEach(r=>r.classList.toggle('show',r.dataset.level===lev));
+  }));
+  function showAllRisks(){document.querySelectorAll('.risk-item').forEach(r=>r.classList.add('show'))} showAllRisks();
+
+  const scenarios={
+    normal:{lat:'28 ms',jit:'8 ms',loss:'0.2%',risk:'Bajo',s:['ok','ok','ok','ok'],labels:['Adecuada','Controlado','Baja','Aceptable'],msg:'Operación normal: firewall, IPS, TLS, segmentación y SIEM trabajan con un impacto moderado y controlado sobre el tráfico.'},
+    peak:{lat:'74 ms',jit:'19 ms',loss:'0.8%',risk:'Medio',s:['warn','warn','ok','warn'],labels:['Atención','Atención','Aceptable','Vigilar'],msg:'Hora pico: la QoS protege voz y telemedicina. El tráfico Best Effort puede experimentar más espera. Conviene revisar capacidad y colas.'},
+    ddos:{lat:'118 ms',jit:'31 ms',loss:'2.8%',risk:'Alto',s:['warn','bad','warn','bad'],labels:['Degradada','Alto','Elevada','Crítico'],msg:'DDoS: el NGFW/IPS puede bloquear parte del tráfico, pero la defensa debe complementarse con anti-DDoS del ISP/CDN y rate-limit. QoS interna no sustituye protección volumétrica.'},
+    ransom:{lat:'35 ms',jit:'10 ms',loss:'0.3%',risk:'Alto',s:['ok','ok','ok','bad'],labels:['Adecuada','Controlado','Baja','Crítico'],msg:'Ransomware: el rendimiento puede parecer normal mientras el riesgo aumenta. La contención depende de EDR, segmentación, MFA, mínimo privilegio, SIEM y backups inmutables.'}
+  };
+  function runSimulation(){
+    const x=scenarios[document.getElementById('scenarioSelect').value];
+    ['Latency','Jitter','Loss','Risk'].forEach((k,idx)=>{
+      const ids=['lat','jit','loss','risk']; document.getElementById('sim'+k).textContent=x[ids[idx]];
+    });
+    ['latency','jitter','loss','risk'].forEach((k,idx)=>{
+      const e=document.getElementById(k+'Status'); e.className='status '+x.s[idx]; e.textContent=x.labels[idx];
+    });
+    document.getElementById('simExplain').innerHTML=x.msg;
+  }
+</script>
+</body>
+</html>
